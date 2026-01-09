@@ -1,10 +1,12 @@
 import torch
 from diffusers import DiffusionPipeline
 
+MODEL_ID = "Owen777/UltraFlux-v1"
+
 class UltraFluxModel:
     def __init__(self):
         self.pipe = DiffusionPipeline.from_pretrained(
-            "Owen777/UltraFlux-v1",
+            MODEL_ID,
             torch_dtype=torch.float16
         ).to("cuda")
 
