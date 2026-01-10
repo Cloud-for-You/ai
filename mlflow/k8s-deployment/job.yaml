@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hf-model-registrar
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      labels:
+        app: hf-model-registrar
+    spec:
+      restartPolicy: Never
+      containers:
+        - args:
+          - -m
+          - app.ultraflux
+          name: registrar
+          image: quay.io/cloud-for-you/ai/mlflow/model-registrar:latest
+          imagePullPolicy: Always
+          env:
+            - name: MLFLOW_TRACKING_URI
+              value: http://mlflow:5000
+            - name: MLFLOW_EXPERIMENT_NAME
+              value: hf-registry
+            - name: HF_HOME
+              value: /models/hf-cache
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2Gi"
+            limits:
+              cpu: "1"
+              memory: "4Gi"
+          volumeMounts:
+            - name: mlflow
+              mountPath: /mlflow
+            - name: mlruns
+              mountPath: /mlruns
+            - name: hf-cache
+              mountPath: /models/hf-cache
+      volumes:
+        - name: hf-cache
+          emptyDir: {}
+        - name: mlflow
+          persistentVolumeClaim:
+            claimName: mlflow
+        - name: mlruns
+          persistentVolumeClaim:
+            claimName: mlruns
