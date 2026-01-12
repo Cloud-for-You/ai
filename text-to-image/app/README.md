@@ -68,6 +68,7 @@ Obrázky jsou uloženy v adresáři `results/` a response obsahuje cesty k nim.
 
 ## Příklad použití
 
+### Pomocí Python
 ```python
 import requests
 
@@ -82,6 +83,18 @@ response = requests.post(url, json=data)
 result = response.json()
 print(result["images"])
 ```
+
+### Pomocí curl
+```bash
+curl -X POST "http://localhost:8000/generate" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "prompts": ["Test prompt"],
+       "height": 4096,
+       "width": 4096
+     }'
+```
+
 
 ## Standalone skript
 
