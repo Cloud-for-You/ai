@@ -6,3 +6,6 @@ accelerate
 pillow
 protobuf
 sentencepiece
+fastapi
+uvicorn
+pydantic
