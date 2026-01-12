@@ -1,17 +1,20 @@
+import os
 import torch
 import mlflow
 import mlflow.transformers
 from diffusers import DiffusionPipeline
 
-MODEL_ID = "Owen777/UltraFlux-v1"
-
 class UltraFluxModel:
     def __init__(self):
-        # Načtení modelu z MLflow registry místo přímého z HF
-        # Předpokládá se, že model je registrovaný pod názvem "ultraflux-model"
-        model_uri = "models:/ultraflux-model/latest"  # Nebo specifická verze, např. "models:/ultraflux-model/1"
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.pipe = mlflow.transformers.load_model(model_uri).to(device)
+        hf_token = os.environ.get("HF_TOKEN")
+        self.pipe = DiffusionPipeline.from_pretrained(
+            "Owen777/UltraFlux-v1",
+            torch_dtype=torch.float16,
+            token=hf_token
+        ).to("cuda")
+
+        # Kontrola, zda je model na GPU
+        print(f"Model loaded on device: {self.pipe.device}")
 
         # Pokud potřebujete specifické nastavení
         self.pipe.enable_attention_slicing()
