@@ -39,7 +39,7 @@ class UltraFluxModel:
             num_inference_steps=num_inference_steps,
             max_sequence_length=max_sequence_length,
             generator=generator,
-            callback=progress_callback
+            callback_on_step_end=progress_callback
         ).images[0]
         logger.info(f"Generování obrázku dokončeno pro prompt: '{prompt}'")
         return result
