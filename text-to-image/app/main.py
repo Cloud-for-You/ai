@@ -2,10 +2,16 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from io import BytesIO
 import base64
+import logging
 
 from .model import UltraFluxModel
 
+# Nastavení loggingu
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 app = FastAPI(title="UltraFlux API")
+
+logger = logging.getLogger(__name__)
 
 model = UltraFluxModel()
 
@@ -20,6 +26,7 @@ class GenerateRequest(BaseModel):
 
 @app.post("/generate")
 def generate(req: GenerateRequest):
+    logger.info(f"Začínám generování obrázku pro prompt: '{req.prompt}' s parametry: height={req.height}, width={req.width}, guidance_scale={req.guidance_scale}, num_inference_steps={req.num_inference_steps}, seed={req.seed}")
     image = model.generate(
         prompt=req.prompt,
         height=req.height,
@@ -29,6 +36,7 @@ def generate(req: GenerateRequest):
         max_sequence_length=req.max_sequence_length,
         seed=req.seed
     )
+    logger.info(f"Generování obrázku dokončeno pro prompt: '{req.prompt}'")
 
     buffer = BytesIO()
     image.save(buffer, format="PNG")
