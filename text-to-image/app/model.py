@@ -1,7 +1,5 @@
 import os
 import torch
-import mlflow
-import mlflow.transformers
 from diffusers import DiffusionPipeline
 
 class UltraFluxModel:

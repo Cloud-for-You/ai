@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from io import BytesIO
 import base64
 
-from model import UltraFluxModel
+from .model import UltraFluxModel
 
 app = FastAPI(title="UltraFlux API")
 
