@@ -9,4 +9,3 @@ pillow
 protobuf
 sentencepiece
 pydantic
-ultraflux

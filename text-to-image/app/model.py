@@ -1,9 +1,8 @@
 import os
 import torch
 from PIL import Image
-from ultraflux.pipeline_flux import FluxPipeline
-from ultraflux.transformer_flux_visionyarn import FluxTransformer2DModel
-from ultraflux.autoencoder_kl import AutoencoderKL
+from diffusers import FluxPipeline, AutoencoderKL
+from diffusers.models import FluxTransformer2DModel
 from diffusers import FlowMatchEulerDiscreteScheduler
 
 class UltraFluxModel:
