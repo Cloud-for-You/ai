@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: text-to-image
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: text-to-image
+  template:
+    metadata:
+      labels:
+        app: text-to-image
+    spec:
+      containers:
+        - name: text-to-image
+          image: text-to-image:latest  # Nahradit skutečným image
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hf-token-secret  # Secret s HF tokenem
+                  key: token
+            - name: LISTEN_PORT
+              value: "8000"
+          resources:
+            requests:
+              cpu: "1"
+              memory: 4Gi
+              nvidia.com/gpu: "1"  # Požadavek na GPU
+            limits:
+              cpu: "2"
+              memory: 8Gi
+              nvidia.com/gpu: "1"
+          volumeMounts:
+            - name: hf-cache
+              mountPath: /cache/huggingface
+      runtimeClassName: nvidia
+      nodeSelector:
+        accelerator: nvidia  # Obecnější nodeSelector pro GPU nody
+      volumes:
+        - name: hf-cache
+          persistentVolumeClaim:
+            claimName: hf-cache
