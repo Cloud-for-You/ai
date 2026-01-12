@@ -11,15 +11,23 @@ model = UltraFluxModel()
 
 class GenerateRequest(BaseModel):
     prompt: str
-    steps: int = 30
-    guidance_scale: float = 7.5
+    height: int = 4096
+    width: int = 4096
+    guidance_scale: float = 4.0
+    num_inference_steps: int = 50
+    max_sequence_length: int = 512
+    seed: int = 0
 
 @app.post("/generate")
 def generate(req: GenerateRequest):
     image = model.generate(
         prompt=req.prompt,
-        steps=req.steps,
-        guidance_scale=req.guidance_scale
+        height=req.height,
+        width=req.width,
+        guidance_scale=req.guidance_scale,
+        num_inference_steps=req.num_inference_steps,
+        max_sequence_length=req.max_sequence_length,
+        seed=req.seed
     )
 
     buffer = BytesIO()

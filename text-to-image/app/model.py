@@ -1,48 +1,33 @@
 import os
 import torch
-from diffusers import DiffusionPipeline
+from PIL import Image
+from ultraflux.pipeline_flux import FluxPipeline
+from ultraflux.transformer_flux_visionyarn import FluxTransformer2DModel
+from ultraflux.autoencoder_kl import AutoencoderKL
+from diffusers import FlowMatchEulerDiscreteScheduler
 
 class UltraFluxModel:
     def __init__(self):
-        hf_token = os.environ.get("HF_TOKEN")
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        # Modified transformer config to remove unsupported attributes
-        transformer_config = {
-            "_class_name": "FluxTransformer2DModel",
-            "_diffusers_version": "0.36.0.dev0",
-            "_name_or_path": "transformer",
-            "attention_head_dim": 128,
-            "axes_dims_rope": [16, 56, 56],
-            "guidance_embeds": True,
-            "in_channels": 64,
-            "joint_attention_dim": 4096,
-            "num_attention_heads": 24,
-            "num_layers": 19,
-            "num_single_layers": 38,
-            "out_channels": None,
-            "patch_size": 1,
-            "pooled_projection_dim": 768
-        }
+        local_vae = AutoencoderKL.from_pretrained("Owen777/UltraFlux-v1", subfolder="vae", torch_dtype=torch.bfloat16)
+        transformer = FluxTransformer2DModel.from_pretrained("Owen777/UltraFlux-v1", subfolder="transformer", torch_dtype=torch.bfloat16)
+        # transformer = FluxTransformer2DModel.from_pretrained("Owen777/UltraFlux-v1-1-Transformer", torch_dtype=torch.bfloat16)  # NOTE: uncomment this line to use UltraFlux-v1.1
+        self.pipe = FluxPipeline.from_pretrained("Owen777/UltraFlux-v1", vae=local_vae, torch_dtype=torch.bfloat16, transformer=transformer)
+        self.pipe.scheduler.config.use_dynamic_shifting = False
+        self.pipe.scheduler.config.time_shift = 4
+        self.pipe = self.pipe.to(device)
 
-        config = {"transformer": transformer_config}
-
-        self.pipe = DiffusionPipeline.from_pretrained(
-            "Owen777/UltraFlux-v1",
-            dtype=torch.float16,
-            token=hf_token,
-            config=config
-        ).to(device)
-
-        # Kontrola, zda je model na GPU
         print(f"Model loaded on device: {self.pipe.device}")
 
-        # Pokud potřebujete specifické nastavení
-        self.pipe.enable_attention_slicing()
-
-    def generate(self, prompt: str, steps: int, guidance_scale: float):
+    def generate(self, prompt: str, height: int = 4096, width: int = 4096, guidance_scale: float = 4.0, num_inference_steps: int = 50, max_sequence_length: int = 512, seed: int = 0):
+        generator = torch.Generator("cpu").manual_seed(seed)
         return self.pipe(
-            prompt=prompt,
-            num_inference_steps=steps,
-            guidance_scale=guidance_scale
+            prompt,
+            height=height,
+            width=width,
+            guidance_scale=guidance_scale,
+            num_inference_steps=num_inference_steps,
+            max_sequence_length=max_sequence_length,
+            generator=generator
         ).images[0]
